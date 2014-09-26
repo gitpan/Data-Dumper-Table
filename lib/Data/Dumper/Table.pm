@@ -10,7 +10,7 @@ use Text::Table;
 use Exporter qw( import );
 our @EXPORT = qw( Tabulate );
 
-our $VERSION = 0.006;
+our $VERSION = 0.007;
 
 our %seen;
 
@@ -97,7 +97,7 @@ sub _tblize {
         $inner = 'REF->' . _tblize($$thing, $run); # TODO for now
     }
     else {
-        $inner = "`$inner'";
+        $inner = "'" . quotemeta($inner) . "'";
     }
     if (ref $inner) {
         $container->add($inner->title . $inner->rule('-', $snidge) . $inner->body);
@@ -117,13 +117,37 @@ Data::Dumper::Table - A more tabular way to Dumper your Data
 
 =head1 VERSION
 
-Version 0.006
+Version 0.007
 
 =head1 SYNOPSIS
 
     use Data::Dumper::Table;
 
-    say Tabulate $some_crazy_data_structure;
+    say Tabulate [
+        { foo => 1, bar => 2 },
+        { foo => 3, bar => { apple => q(or'ange) } },
+        [
+            { bar => q(baz), flibble => q(quux), flobble => undef() },
+            { bar => q(baz2), flobble => qr/foo/ }
+        ]
+    ];
+
+    ARRAY(0x145dc30) [0] HASH(0x143e148)
+                         ----------
+                         bar => '2'
+                         foo => '1'
+                     [1] HASH(0x14531d8)
+                         --------------------------
+                         bar => HASH(0x1453130)
+                                -------------------
+                                apple => 'or\'ange'
+                         foo => '3'
+                     [2] ARRAY(0x145dba0)
+                          bar    | flibble       | flobble
+                         --------+---------------+---------------
+                          'baz'  | 'quux'        | (* undef *)
+                          'baz2' | (* no data *) | qr/(?^u:foo)/
+
 
 =head1 DESCRIPTION
 
