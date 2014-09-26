@@ -10,7 +10,7 @@ use Text::Table;
 use Exporter qw( import );
 our @EXPORT = qw( Tabulate );
 
-our $VERSION = 0.001;
+our $VERSION = 0.002;
 
 our %seen;
 
@@ -37,7 +37,7 @@ sub _tblize {
     if (my $b = blessed($thing)) {
         $alias = $b . '=' . $alias;
     }
-    if ($seen{ $run }->{ $alias }++) {
+    if ($alias ne '( scalar )' and $seen{ $run }->{ $alias }++) {
         return 'CIRCULAR->' . $alias;
     }
     my $container = Text::Table->new($alias);
@@ -65,6 +65,7 @@ sub _tblize {
             }
         }
         else {
+            $inner = Text::Table->new('data');
             for my $row (@$thing) {
                 $inner->add(_tblize($row, $run));
             }
@@ -89,6 +90,7 @@ sub _tblize {
     else {
         $inner = "$thing";
     }
+    return "$inner" if $alias eq '( scalar )';
     $container->add("$inner");
     return "$container";
 }
@@ -103,7 +105,7 @@ Data::Dumper::Table - A more tabular way to Dumper your Data
 
 =head1 VERSION
 
-Version 0.001
+Version 0.002
 
 =head1 SYNOPSIS
 
