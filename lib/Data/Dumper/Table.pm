@@ -10,7 +10,7 @@ use Text::Table;
 use Exporter qw( import );
 our @EXPORT = qw( Tabulate );
 
-our $VERSION = 0.003;
+our $VERSION = 0.004;
 
 our %seen;
 
@@ -28,20 +28,21 @@ sub _tblize {
     my ($thing, $run) = @_;
     return '(* undef *)' unless defined $thing;
     my $r = reftype($thing);
-    my $addr = uc sprintf('%x', refaddr($thing));
+    my $addr = lc sprintf('%x', refaddr($thing));
     my $alias
         = defined $thing
             ? ($r ? ($r . '(0x' . $addr . ')') : '( scalar )')
             : '(* undef *)'
             ;
     if (my $b = blessed($thing)) {
-        $alias = $b . '=' . $alias;
+        $alias = $b . '=' . $alias unless $b eq 'Regexp';
     }
     if ($alias ne '( scalar )' and $seen{ $run }->{ $alias }++) {
         return 'CIRCULAR->' . $alias;
     }
-    my $container = Text::Table->new($alias);
+    my $container = Text::Table->new(($alias)x!($alias eq '( scalar )'));
     my $inner = $thing;
+    my $snidge = '+';
     if ($r eq 'ARRAY') {
         my %header;
         my @v = grep {
@@ -54,8 +55,10 @@ sub _tblize {
             } : undef
         } @$thing;
         if (@v == @$thing) {
-            my @head = map { \'|', $_ } sort keys %header;
+            my @head = map { \' | ', $_ } sort keys %header;
             shift @head;
+            unshift @head, \' ';
+            push @head, \' ';
             $inner = Text::Table->new(@head);
             for my $row (@$thing) {
                 my @body;
@@ -67,33 +70,40 @@ sub _tblize {
         }
         else {
             $inner = Text::Table->new();
+            my $smark = "$alias:";
             for my $row (@$thing) {
-                $inner->add(_tblize($row, $run));
+                $inner->add($smark, _tblize($row, $run));
+                $smark = '';
             }
             return $inner;
         }
     }
     elsif ($r eq 'HASH') {
         my @keys = sort keys %$thing;
-        $inner = Text::Table->new('key', \'|', 'value');
+        $inner = Text::Table->new();
         for my $k (@keys) {
-            $inner->add($k, _tblize($thing->{ $k }, $run));
+            $inner->add($k, '=>', _tblize($thing->{ $k }, $run));
+            $snidge = '-';
         }
     }
     elsif ($r eq 'CODE') {
-        return 'sub DUMMY { }'; # TODO for now
+        $inner = 'sub DUMMY { }'; # TODO for now
     }
     elsif (uc $r eq 'REGEXP') {
         return "qr/$thing/";
     }
     elsif ($r) {
-        return 'REF->' . _tblize($$thing, $run); # TODO for now
+        $inner = 'REF->' . _tblize($$thing, $run); # TODO for now
     }
     else {
-        return $inner;
+        $inner = "`$inner'";
     }
-    $container->add($inner->title . $inner->rule('-', '+') . $inner->body);
-    return $container->rule('_') . $container->title . $container->body;
+    if (ref $inner) {
+        $container->add($inner->title . $inner->rule('-', $snidge) . $inner->body);
+        return $container->title . $container->body;
+    }
+    $container->add($inner);
+    return $container->title . $container->body;
 }
 
 1;
@@ -106,7 +116,7 @@ Data::Dumper::Table - A more tabular way to Dumper your Data
 
 =head1 VERSION
 
-Version 0.003
+Version 0.004
 
 =head1 SYNOPSIS
 
