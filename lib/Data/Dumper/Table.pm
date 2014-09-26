@@ -10,7 +10,7 @@ use Text::Table;
 use Exporter qw( import );
 our @EXPORT = qw( Tabulate );
 
-our $VERSION = 0.005;
+our $VERSION = 0.006;
 
 our %seen;
 
@@ -70,10 +70,11 @@ sub _tblize {
         }
         else {
             $inner = Text::Table->new();
-            my $smark = "$alias:";
+            my $n = 0;
+            my $index = "$alias [" . $n++ . "]";
             for my $row (@$thing) {
-                $inner->add($smark, _tblize($row, $run));
-                $smark = '';
+                $inner->add($index, _tblize($row, $run));
+                $index = (' ' x (2 + length($alias) - length($n))) . '[' . $n++ . ']';
             }
             return $inner;
         }
@@ -116,7 +117,7 @@ Data::Dumper::Table - A more tabular way to Dumper your Data
 
 =head1 VERSION
 
-Version 0.005
+Version 0.006
 
 =head1 SYNOPSIS
 
