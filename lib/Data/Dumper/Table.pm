@@ -10,7 +10,7 @@ use Text::Table;
 use Exporter qw( import );
 our @EXPORT = qw( Tabulate );
 
-our $VERSION = 0.002;
+our $VERSION = 0.003;
 
 our %seen;
 
@@ -54,45 +54,46 @@ sub _tblize {
             } : undef
         } @$thing;
         if (@v == @$thing) {
-            my @head = sort keys %header;
+            my @head = map { \'|', $_ } sort keys %header;
+            shift @head;
             $inner = Text::Table->new(@head);
             for my $row (@$thing) {
                 my @body;
-                for my $k (@head) {
+                for my $k (grep { !ref $_ } @head) {
                     push @body, (exists($row->{ $k }) ? _tblize($row->{ $k }, $run) : '(* no data *)');
                 }
                 $inner->add(@body);
             }
         }
         else {
-            $inner = Text::Table->new('data');
+            $inner = Text::Table->new();
             for my $row (@$thing) {
                 $inner->add(_tblize($row, $run));
             }
+            return $inner;
         }
     }
     elsif ($r eq 'HASH') {
         my @keys = sort keys %$thing;
-        $inner = Text::Table->new(qw( key value ));
+        $inner = Text::Table->new('key', \'|', 'value');
         for my $k (@keys) {
             $inner->add($k, _tblize($thing->{ $k }, $run));
         }
     }
     elsif ($r eq 'CODE') {
-        $inner = 'sub DUMMY { }'; # TODO for now
+        return 'sub DUMMY { }'; # TODO for now
     }
     elsif (uc $r eq 'REGEXP') {
-        $inner = "$thing";
+        return "qr/$thing/";
     }
     elsif ($r) {
-        $inner = 'REF->' . _tblize($$thing, $run); # TODO for now
+        return 'REF->' . _tblize($$thing, $run); # TODO for now
     }
     else {
-        $inner = "$thing";
+        return $inner;
     }
-    return "$inner" if $alias eq '( scalar )';
-    $container->add("$inner");
-    return "$container";
+    $container->add($inner->title . $inner->rule('-', '+') . $inner->body);
+    return $container->rule('_') . $container->title . $container->body;
 }
 
 1;
@@ -105,7 +106,7 @@ Data::Dumper::Table - A more tabular way to Dumper your Data
 
 =head1 VERSION
 
-Version 0.002
+Version 0.003
 
 =head1 SYNOPSIS
 
