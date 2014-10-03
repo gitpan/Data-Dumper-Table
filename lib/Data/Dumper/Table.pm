@@ -10,7 +10,7 @@ use Text::Table;
 use Exporter qw( import );
 our @EXPORT = qw( Tabulate );
 
-our $VERSION = 0.009;
+our $VERSION = 0.010;
 
 our %seen;
 
@@ -124,7 +124,7 @@ Data::Dumper::Table - A more tabular way to Dumper your Data
 
 =head1 VERSION
 
-Version 0.009
+Version 0.010
 
 =head1 SYNOPSIS
 
@@ -142,24 +142,24 @@ Version 0.009
         ]
     ];
 
-ARRAY(1) [0] HASH(2)
-             -----------------------------
-             'bar' => '2'
-             'foo' => ARRAY(3) [0] 'one'
-                               [1] 'two'
-                               [2] 'three'
-         [1] HASH(4)
-             ------------------------------
-             'bar' => HASH(5)
-                      ---------------------
-                      'apple' => 'or\'ange'
-             'foo' => '3'
-         [2] -> ARRAY(3)
-         [3] ARRAY<HASH>(6)
-              'bar'  | 'flibble' | 'flobble'
-             --------+-----------+-------------
-              'baz'  | 'quux'    | undef()
-              'baz2' | -         | /(?^u:foo)/
+    ARRAY(1) [0] HASH(2)
+                 -----------------------------
+                 'bar' => '2'
+                 'foo' => ARRAY(3) [0] 'one'
+                                   [1] 'two'
+                                   [2] 'three'
+             [1] HASH(4)
+                 ------------------------------
+                 'bar' => HASH(5)
+                          ---------------------
+                          'apple' => 'or\'ange'
+                 'foo' => '3'
+             [2] -> ARRAY(3)
+             [3] ARRAY<HASH>(6)
+                  'bar'  | 'flibble' | 'flobble'
+                 --------+-----------+-------------
+                  'baz'  | 'quux'    | undef()
+                  'baz2' | -         | /(?^u:foo)/
 
 =head1 DESCRIPTION
 

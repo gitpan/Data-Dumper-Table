@@ -1,5 +1,8 @@
 Revision history for Data-Dumper-Tabluate
 
+0.010   2014-10-03
+        Doc fix
+
 0.009   2014-10-03
         Bump the MANIFEST to include the new test script
 
