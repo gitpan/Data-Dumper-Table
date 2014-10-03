@@ -10,7 +10,7 @@ use Text::Table;
 use Exporter qw( import );
 our @EXPORT = qw( Tabulate );
 
-our $VERSION = 0.008;
+our $VERSION = 0.009;
 
 our %seen;
 
@@ -124,7 +124,7 @@ Data::Dumper::Table - A more tabular way to Dumper your Data
 
 =head1 VERSION
 
-Version 0.008
+Version 0.009
 
 =head1 SYNOPSIS
 
